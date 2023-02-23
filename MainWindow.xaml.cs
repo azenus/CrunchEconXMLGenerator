@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Data;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -31,8 +32,46 @@ namespace CreateEconomyFiles
             if (openFileDialog.ShowDialog() == true)
             {
                 CSVFilePath = openFileDialog.FileName;
+
+                // Read the CSV file into a DataTable
+                var dataTable = new DataTable();
+                using (var reader = new StreamReader(CSVFilePath))
+                {
+                    var header = true;
+                    while (!reader.EndOfStream)
+                    {
+                        var line = reader.ReadLine();
+                        var values = line.Split(',');
+
+                        if (header)
+                        {
+                            foreach (var value in values)
+                            {
+                                dataTable.Columns.Add(value.Trim());
+                            }
+                            header = false;
+                        }
+                        else if (values.Length == dataTable.Columns.Count) // Handle rows with different number of columns than the header
+                        {
+                            var row = dataTable.NewRow();
+                            for (int i = 0; i < values.Length; i++)
+                            {
+                                row[i] = values[i].Trim();
+                            }
+                            dataTable.Rows.Add(row);
+                        }
+                    }
+                }
+
+                // Bind the DataTable to the DataGrid
+                CSVDataGrid.ItemsSource = dataTable.DefaultView;
+
+                // Update the text box with the selected file name
+                CSVFilePathTextBox.Text = Path.GetFileName(CSVFilePath);
             }
         }
+
+
 
         private void ExecuteButton_Click(object sender, RoutedEventArgs e)
         {
@@ -75,11 +114,6 @@ namespace CreateEconomyFiles
 
             MessageBox.Show("XML files generated successfully.");
         }
-
-
-
-
-
 
         public event PropertyChangedEventHandler PropertyChanged;
 

@@ -1,28 +1,33 @@
 ﻿<Window x:Class="CreateEconomyFiles.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Create Economy Files" Height="350" Width="525">
+        Title="Create Economy Files" Height="800" Width="1400">
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
         </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
 
-        <Label Content="Enter the root element name:" Grid.Row="0"/>
-        <TextBox x:Name="RootElementNameTextBox" Grid.Row="1"/>
+        <Label Grid.Row="0" Grid.Column="0" Margin="5">Root Element:</Label>
+        <ComboBox x:Name="RootElementNameTextBox" Grid.Row="0" Grid.Column="1" Margin="5">
+            <ComboBoxItem Content="BuyOrder" IsSelected="True" />
+            <ComboBoxItem Content="SellOrder" />
+        </ComboBox>
 
-        
+        <Label Grid.Row="1" Grid.Column="0" Margin="5">Select CSV File:</Label>
+        <Button x:Name="BrowseButton" Grid.Row="1" Grid.Column="2" Margin="5" Content="Browse..." Click="BrowseButton_Click" />
+        <Label Grid.Row="2" Grid.Column="0" Margin="5">File Name</Label>
+        <TextBox x:Name="CSVFilePathTextBox" Grid.Row="2" Grid.Column="1" Margin="5" IsReadOnly="True" />
+        <Button x:Name="ExecuteButton" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" Margin="5" Content="Execute" Click="ExecuteButton_Click" />
+        <DataGrid x:Name="CSVDataGrid" Grid.Column="0" Grid.Row="5" Margin="5" Grid.ColumnSpan="2" AutoGenerateColumns="True" />
 
-        <StackPanel Grid.Row="4" Orientation="Horizontal">
-            <Label Content="Select the CSV file:"/>
-            <Button Content="Browse..." Click="BrowseButton_Click"/>
-            <TextBox x:Name="CSVFilePathTextBox" Text="{Binding CSVFilePath}" Margin="5,0,0,0" VerticalAlignment="Center" IsReadOnly="True" Width="300"/>
-        </StackPanel>
-
-        <Button Content="Execute" Click="ExecuteButton_Click" Grid.Row="5" Width="100" Height="50" HorizontalAlignment="Left" VerticalAlignment="Top"/>
     </Grid>
 </Window>
