@@ -18,7 +18,7 @@ namespace CreateEconomyFiles
         }
 
         private string _csvFilePath;
-
+        private DataTable dataTable;
         public string CSVFilePath
         {
             get { return _csvFilePath; }
@@ -34,7 +34,7 @@ namespace CreateEconomyFiles
                 CSVFilePath = openFileDialog.FileName;
 
                 // Read the CSV file into a DataTable
-                var dataTable = new DataTable();
+                dataTable = new DataTable();
                 using (var reader = new StreamReader(CSVFilePath))
                 {
                     var header = true;
@@ -51,7 +51,7 @@ namespace CreateEconomyFiles
                             }
                             header = false;
                         }
-                        else if (values.Length == dataTable.Columns.Count) // Handle rows with different number of columns than the header
+                        else if (values.Length == dataTable.Columns.Count)
                         {
                             var row = dataTable.NewRow();
                             for (int i = 0; i < values.Length; i++)
@@ -71,6 +71,25 @@ namespace CreateEconomyFiles
             }
         }
 
+        private void SaveButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Write the contents of the DataTable back to the CSV file
+            using (var writer = new StreamWriter(CSVFilePath))
+            {
+                // Write the header row
+                var header = string.Join(",", dataTable.Columns.Cast<DataColumn>().Select(c => c.ColumnName));
+                writer.WriteLine(header);
+
+                // Write the data rows
+                foreach (DataRow row in dataTable.Rows)
+                {
+                    var values = string.Join(",", row.ItemArray.Select(v => v.ToString()));
+                    writer.WriteLine(values);
+                }
+            }
+
+            MessageBox.Show("CSV file saved successfully.");
+        }
 
 
         private void ExecuteButton_Click(object sender, RoutedEventArgs e)
