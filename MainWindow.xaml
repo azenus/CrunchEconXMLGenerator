@@ -18,7 +18,7 @@
         </Grid.ColumnDefinitions>
 
         <Label Grid.Row="0" Grid.Column="0" Margin="5">Root Element:</Label>
-        <ComboBox x:Name="RootElementComboBox" Grid.Row="0" Grid.Column="1" Margin="5">
+        <ComboBox x:Name="RootElementNameTextBox" Grid.Row="0" Grid.Column="1" Margin="5">
             <ComboBoxItem Content="BuyOrder" IsSelected="True" />
             <ComboBoxItem Content="SellOrder" />
         </ComboBox>
@@ -28,7 +28,6 @@
         <Label Grid.Row="2" Grid.Column="0" Margin="5">File Name</Label>
         <TextBox x:Name="CSVFilePathTextBox" Grid.Row="2" Grid.Column="1" Margin="5" IsReadOnly="True" />
         <Button x:Name="ExecuteButton" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" Margin="5" Content="Execute" Click="ExecuteButton_Click" />
-
         <DataGrid x:Name="CSVDataGrid" Grid.Column="0" Grid.Row="5" Margin="5" Grid.ColumnSpan="2" AutoGenerateColumns="True" />
 
         <StackPanel Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="5">
