@@ -1,9 +1,12 @@
-﻿using System.ComponentModel;
+﻿using Microsoft.Win32;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.Data;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows;
+using System.Windows.Controls;
 using System.Xml;
 
 namespace CreateEconomyFiles
@@ -17,11 +20,19 @@ namespace CreateEconomyFiles
         }
 
         private string _csvFilePath;
-        private DataTable dataTable;
+
         public string CSVFilePath
         {
             get { return _csvFilePath; }
             set { _csvFilePath = value; OnPropertyChanged(); }
+        }
+
+        private DataTable _dataTable;
+
+        public DataTable DataTable
+        {
+            get { return _dataTable; }
+            set { _dataTable = value; OnPropertyChanged(); }
         }
 
         private void BrowseButton_Click(object sender, RoutedEventArgs e)
@@ -33,7 +44,7 @@ namespace CreateEconomyFiles
                 CSVFilePath = openFileDialog.FileName;
 
                 // Read the CSV file into a DataTable
-                var dataTable = new DataTable();
+                DataTable = new DataTable();
                 using (var reader = new StreamReader(CSVFilePath))
                 {
                     var header = true;
@@ -46,54 +57,35 @@ namespace CreateEconomyFiles
                         {
                             foreach (var value in values)
                             {
-                                dataTable.Columns.Add(value.Trim());
+                                DataTable.Columns.Add(value.Trim());
                             }
                             header = false;
                         }
-                        else if (values.Length == dataTable.Columns.Count) // Handle rows with different number of columns than the header
+                        else if (values.Length == DataTable.Columns.Count) // Handle rows with different number of columns than the header
                         {
-                            var row = dataTable.NewRow();
+                            var row = DataTable.NewRow();
                             for (int i = 0; i < values.Length; i++)
                             {
                                 row[i] = values[i].Trim();
                             }
-                            dataTable.Rows.Add(row);
+                            DataTable.Rows.Add(row);
                         }
                     }
                 }
 
                 // Bind the DataTable to the DataGrid
-                CSVDataGrid.ItemsSource = dataTable.DefaultView;
+                CSVDataGrid.ItemsSource = DataTable.DefaultView;
 
                 // Update the text box with the selected file name
                 CSVFilePathTextBox.Text = Path.GetFileName(CSVFilePath);
             }
         }
 
-        private void SaveButton_Click(object sender, RoutedEventArgs e)
-        {
-            // Write the contents of the DataTable back to the CSV file
-            using (var writer = new StreamWriter(CSVFilePath))
-            {
-                // Write the header row
-                var header = string.Join(",", dataTable.Columns.Cast<DataColumn>().Select(c => c.ColumnName));
-                writer.WriteLine(header);
-
-                // Write the data rows
-                foreach (DataRow row in dataTable.Rows)
-                {
-                    var values = string.Join(",", row.ItemArray.Select(v => v.ToString()));
-                    writer.WriteLine(values);
-                }
-            }
-
-            MessageBox.Show("CSV file saved successfully.");
-        }
 
 
         private void ExecuteButton_Click(object sender, RoutedEventArgs e)
         {
-            var rootElementName = RootElementNameTextBox.Text;
+            var rootElementName = ((ComboBoxItem)RootElementComboBox.SelectedItem).Content.ToString();
             var prolog = "?xml version=\"1.0\" encoding=\"UTF-8\"?>"; // Set the default prolog
             var csvFilePath = CSVFilePath;
 
@@ -119,19 +111,73 @@ namespace CreateEconomyFiles
 
                 for (int i = 0; i < headers.Length; i++)
                 {
-                    var node = xmlDocument.CreateElement(headers[i]);
-                    node.InnerText = values[i];
-                    rootElement.AppendChild(node);
+                    if (headers[i] != "")
+                    {
+                        var node = xmlDocument.CreateElement(headers[i]);
+                        if (values[i] != null && values[i] != "")
+                        {
+                            node.InnerText = values[i];
+                        }
+                        rootElement.AppendChild(node);
+                    }
                 }
 
                 // Save the XML file
-                var xmlFileName = values[1] + ".xml"; // Use the value in column B for the file name
+                var fileName = (rootElementName == "SellOrder") ? values[3] : values[1]; // Use the value in column D for SellOrder root element
+                var xmlFileName = fileName + ".xml";
                 var xmlFilePath = Path.Combine(Path.GetDirectoryName(csvFilePath), xmlFileName);
                 xmlDocument.Save(xmlFilePath);
             }
 
             MessageBox.Show("XML files generated successfully.");
         }
+
+
+        private void SaveButton_Click(object sender, RoutedEventArgs e)
+        {
+            var lines = new List<string>();
+
+            // Add the headers to the CSV file
+            var headers = string.Join(",", DataTable.Columns.Cast<DataColumn>().Select(column => column.ColumnName));
+            lines.Add(headers);
+
+            // Add the data rows to the CSV file
+            foreach (DataRow row in DataTable.Rows)
+            {
+                var values = row.ItemArray.Select(o => o.ToString()).ToArray();
+                var line = string.Join(",", values);
+                lines.Add(line);
+            }
+
+            // Write the lines to the CSV file
+            File.WriteAllLines(CSVFilePath, lines);
+
+            MessageBox.Show("Changes saved successfully.");
+        }
+
+
+
+        private void AddRowButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataTable != null)
+            {
+                var row = DataTable.NewRow();
+                DataTable.Rows.Add(row);
+            }
+        }
+
+        private void RemoveRowButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataTable != null && CSVDataGrid.SelectedItem != null)
+            {
+                var rowView = CSVDataGrid.SelectedItem as DataRowView;
+                if (rowView != null)
+                {
+                    DataTable.Rows.Remove(rowView.Row);
+                }
+            }
+        }
+
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -141,3 +187,4 @@ namespace CreateEconomyFiles
         }
     }
 }
+
